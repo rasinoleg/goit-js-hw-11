@@ -6,50 +6,60 @@ import { searchImages } from './api';
 const form = document.getElementById('search-form');
 const gallery = document.querySelector('.gallery');
 const loadMoreBtn = document.querySelector('.load-more');
-
+let currentPage = 1;
 
 form.addEventListener('submit', e => {
   e.preventDefault();
   const searchQuery = e.target.searchQuery.value;
-    searchImages(searchQuery).then(images => {
+  loadMoreImages(searchQuery);
+});
+
+form.addEventListener('input', () => {
+  loadMoreBtn.style.display = 'block';
+});
+
+loadMoreBtn.addEventListener('click', () => {
+  const searchQuery = form.searchQuery.value;
+  loadMoreImages(searchQuery);
+});
+
+function loadMoreImages(searchQuery) {
+  searchImages(searchQuery, currentPage).then(images => {
     const photos = images
       .map(({ likes, webformatURL, downloads, views, comments }) => {
         return `<div class="photo-card">
-        <a href="${webformatURL}" data-lightbox="gallery">
-          <img src="${webformatURL}" alt="" loading="lazy" />
-        </a>
-        <div class="info">
-          <p class="info-item">
-            <b>Likes:</b> ${likes}
-          </p>
-          <p class="info-item">
-            <b>Views:</b> ${views}
-          </p>
-          <p class="info-item">
-            <b>Comments:</b> ${comments}
-          </p>
-          <p class="info-item">
-            <b>Downloads:</b> ${downloads}
-          </p>
-        </div>
-      </div>`;
+          <a href="${webformatURL}" data-lightbox="gallery">
+            <img src="${webformatURL}" alt="" loading="lazy" />
+          </a>
+          <div class="info">
+            <p class="info-item">
+              <b>Likes:</b> ${likes}
+            </p>
+            <p class="info-item">
+              <b>Views:</b> ${views}
+            </p>
+            <p class="info-item">
+              <b>Comments:</b> ${comments}
+            </p>
+            <p class="info-item">
+              <b>Downloads:</b> ${downloads}
+            </p>
+          </div>
+        </div>`;
       })
       .join('');
 
-    gallery.innerHTML = photos;
+    gallery.innerHTML += photos;
 
     const lightbox = new SimpleLightbox('.gallery a', {});
 
     lightbox.on('show.simplelightbox', () => {});
 
-    loadMoreBtn.style.display = 'block';
+    currentPage++;
+
+    if (images.length === 0) {
+      loadMoreBtn.style.display = 'none';
+    }
   });
-});
-
-loadMoreBtn.addEventListener('click', () => {});
-
-
-
-
-
+}
 
