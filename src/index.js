@@ -6,20 +6,33 @@ import { searchImages } from './api';
 const form = document.getElementById('search-form');
 const gallery = document.querySelector('.gallery');
 const loadMoreBtn = document.querySelector('.load-more');
+
 let currentPage = 1;
 let isButtonVisible = false;
 
 loadMoreBtn.style.display = 'none';
 
-form.addEventListener('submit', e => {
-  e.preventDefault();
-  const searchQuery = e.target.searchQuery.value;
-  loadMoreImages(searchQuery);
-});
+form.addEventListener('submit', onFormSubmit); 
+loadMoreBtn.addEventListener('click', loadMoreBtnClik);
+const lightbox = new SimpleLightbox('.gallery a', {});
 
-function loadMoreImages(searchQuery) {
-  searchImages(searchQuery, currentPage).then(images => {
-    const photos = images
+function onFormSubmit(e) {
+    e.preventDefault();
+const searchQuery = e.target.searchQuery.value.trim();
+if (!searchQuery) {
+    return;
+}
+loadMoreImages(searchQuery);
+}
+
+function loadMoreBtnClik (e) {
+    const searchQuery = form.searchQuery.value;
+    loadMoreImages(searchQuery);
+}
+
+async function loadMoreImages(searchQuery) {
+const {hits, totalHits} = await searchImages(searchQuery, currentPage);
+    const photos = hits
       .map(({ likes, webformatURL, downloads, views, comments }) => {
         return `<div class="photo-card">
           <a href="${webformatURL}" data-lightbox="gallery">
@@ -45,11 +58,7 @@ function loadMoreImages(searchQuery) {
 
     gallery.innerHTML = photos;
 
-    const lightbox = new SimpleLightbox('.gallery a', {});
-
-    lightbox.on('show.simplelightbox', () => {});
-
-    if (images.length === 0) {
+    if (hits.length === 0) {
       isButtonVisible = false;
     } else {
       isButtonVisible = true;
@@ -57,13 +66,7 @@ function loadMoreImages(searchQuery) {
     }
 
     loadMoreBtn.style.display = isButtonVisible ? 'block' : 'none';
-  });
 }
-
-loadMoreBtn.addEventListener('click', () => {
-  const searchQuery = form.searchQuery.value;
-  loadMoreImages(searchQuery);
-});
 
 form.addEventListener('input', () => {
   loadMoreBtn.style.display = isButtonVisible ? 'block' : 'none';
