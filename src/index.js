@@ -7,19 +7,13 @@ const form = document.getElementById('search-form');
 const gallery = document.querySelector('.gallery');
 const loadMoreBtn = document.querySelector('.load-more');
 let currentPage = 1;
+let isButtonVisible = false;
+
+loadMoreBtn.style.display = 'none';
 
 form.addEventListener('submit', e => {
   e.preventDefault();
   const searchQuery = e.target.searchQuery.value;
-  loadMoreImages(searchQuery);
-});
-
-form.addEventListener('input', () => {
-  loadMoreBtn.style.display = 'block';
-});
-
-loadMoreBtn.addEventListener('click', () => {
-  const searchQuery = form.searchQuery.value;
   loadMoreImages(searchQuery);
 });
 
@@ -49,17 +43,29 @@ function loadMoreImages(searchQuery) {
       })
       .join('');
 
-    gallery.innerHTML += photos;
+    gallery.innerHTML = photos;
 
     const lightbox = new SimpleLightbox('.gallery a', {});
 
     lightbox.on('show.simplelightbox', () => {});
 
-    currentPage++;
-
     if (images.length === 0) {
-      loadMoreBtn.style.display = 'none';
+      isButtonVisible = false;
+    } else {
+      isButtonVisible = true;
+      currentPage++;
     }
+
+    loadMoreBtn.style.display = isButtonVisible ? 'block' : 'none';
   });
 }
+
+loadMoreBtn.addEventListener('click', () => {
+  const searchQuery = form.searchQuery.value;
+  loadMoreImages(searchQuery);
+});
+
+form.addEventListener('input', () => {
+  loadMoreBtn.style.display = isButtonVisible ? 'block' : 'none';
+});
 
