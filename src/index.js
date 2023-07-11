@@ -3,38 +3,47 @@ import 'simplelightbox/dist/simple-lightbox.min.css';
 import './style.css';
 import { searchImages } from './api';
 
+
 const form = document.getElementById('search-form');
 const gallery = document.querySelector('.gallery');
 const loadMoreBtn = document.querySelector('.load-more');
 
 let currentPage = 1;
 let isButtonVisible = false;
+let totalHits = 0;
 
 loadMoreBtn.style.display = 'none';
 
-form.addEventListener('submit', onFormSubmit); 
+form.addEventListener('submit', onFormSubmit);
 loadMoreBtn.addEventListener('click', loadMoreBtnClik);
-const lightbox = new SimpleLightbox('.gallery a', {});
+
+const lightbox = new SimpleLightbox('.gallery a',{
+    captions: true,
+    captionsData: 'alt',
+    captionDelay: 250,
+  });
 
 function onFormSubmit(e) {
-    e.preventDefault();
-const searchQuery = e.target.searchQuery.value.trim();
-if (!searchQuery) {
+  e.preventDefault();
+  const searchQuery = e.target.searchQuery.value.trim();
+  if (!searchQuery) {
     return;
-}
-loadMoreImages(searchQuery);
+  } currentPage = 1;
+  totalHits = 0;
+  loadMoreImages(searchQuery);
 }
 
-function loadMoreBtnClik (e) {
-    const searchQuery = form.searchQuery.value;
-    loadMoreImages(searchQuery);
+function loadMoreBtnClik(e) {
+  const searchQuery = form.searchQuery.value;
+  loadMoreImages(searchQuery);
 }
 
 async function loadMoreImages(searchQuery) {
-const {hits, totalHits} = await searchImages(searchQuery, currentPage);
-    const photos = hits
-      .map(({ likes, webformatURL, downloads, views, comments }) => {
-        return `<div class="photo-card">
+    lightbox.refresh();
+  const { hits, total } = await searchImages(searchQuery, currentPage);
+  const photos = hits
+    .map(({ likes, webformatURL, downloads, views, comments }) => {
+      return `<div class="photo-card">
           <a href="${webformatURL}" data-lightbox="gallery">
             <img src="${webformatURL}" alt="" loading="lazy" />
           </a>
@@ -53,22 +62,18 @@ const {hits, totalHits} = await searchImages(searchQuery, currentPage);
             </p>
           </div>
         </div>`;
-      })
-      .join('');
+    })
+    .join('');
 
-    gallery.innerHTML = photos;
+  gallery.innerHTML = photos;
+  totalHits = total;
 
-    if (hits.length === 0) {
-      isButtonVisible = false;
-    } else {
-      isButtonVisible = true;
-      currentPage++;
-    }
+  if (hits.length === 0) {
+    isButtonVisible = false;
+  } else {
+    isButtonVisible = true;
+    currentPage++;
+  }
 
-    loadMoreBtn.style.display = isButtonVisible ? 'block' : 'none';
-}
-
-form.addEventListener('input', () => {
   loadMoreBtn.style.display = isButtonVisible ? 'block' : 'none';
-});
-
+}

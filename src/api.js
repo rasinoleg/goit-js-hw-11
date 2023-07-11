@@ -10,6 +10,7 @@ async function searchImages(searchQuery, currentPage) {
     safesearch: 'true',
     per_page: 40,
     page: currentPage,
+   
   };
   const { data } = await axios(URL, { params });
   return data;
