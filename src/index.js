@@ -66,6 +66,7 @@ async function loadMoreImages(searchQuery) {
     .join('');
 
   gallery.innerHTML = photos;
+  gallery.innerHTML += photos;
   totalHits = total;
 
   if (hits.length === 0) {
